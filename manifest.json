@@ -1,6 +1,6 @@
 {
   "name": "JX Business Class Service System",
-  "short_name": "JX BCSS",
+  "short_name": "Star Gourmet",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0d1a26",
@@ -15,3 +15,4 @@
   ]
 
 }
+
