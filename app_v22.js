@@ -175,6 +175,14 @@ const MENUS = {
 
     'TPE-OKA': {
         meal_1: [
+            { code: 'MCK1', name: 'Pan Seared Chicken Thigh, Truffle Mushroom Risotto, Ratatouille', chinese: '香煎雞腿排·松露野燉飯·普羅旺斯燉菜', dessert: 'ONE TRAY SERVICE' },
+            { code: 'MFI1', name: 'Kabayaki Style Grilled Eel', chinese: '蒲燒鰻魚越光米飯', dessert: 'ONE TRAY SERVICE' },
+            { code: 'MPK1', name: 'Parma Ham Wrapped Pork Tenderloin Sauteed Gnocchi Demi Glace Sauce', chinese: '風乾火腿捲豬排·義式麵疙瘩·多蜜醬', dessert: 'ONE TRAY SERVICE' },
+        ],
+    },
+
+    'KMJ-TPE': {
+        meal_1: [
             { code: 'MPK1', name: 'Spiced Roast Pork Shoulder', chinese: '香料烤豬肩義式寬麵', dessert: 'ONE TRAY SERVICE' },
             { code: 'MFI1', name: 'Seared Halibut w/ Truffle Potatoes', chinese: '炙烤比目魚松露洋芋', dessert: 'ONE TRAY SERVICE' },
             { code: 'MSE1', name: 'STARLUX Edition', chinese: '星宇精選佳餚', dessert: 'ONE TRAY SERVICE' },
@@ -294,7 +302,8 @@ const ROUTES = [
     { id: 'TPE-HKG', name: 'Taipei - HKG/MFM/CRK/MNL (SS)', type: 'SS' },
     { id: 'TPE-OKA', name: 'Taipei - OKA/FUK/KMJ (SS)', type: 'SS' },
     { id: 'TPE-SHI', name: 'Taipei - SHI (USS)', type: 'SS' },
-    
+    { id: 'HKG-TPE', name: 'Hong Kong (HKG) - Taipei (SS)', type: 'SS' },
+    { id: ''KMJ-TPE'' name: 'Kumamoto (KMJ) - Taipei (SS)', type: 'SS' },
 
     // --- S (Short) 短程 ---
     // 包含 NRT, KIX, SDJ (共用 TPE-NRT 菜單)
@@ -309,7 +318,7 @@ const ROUTES = [
     // --- L (Long) 長程 ---
     // [新功能] 這些航線有 Soup/Salad + 第二餐
     { id: 'TPE-LAX', name: 'Taipei - LAX/SFO/SEA/ONT (L)', type: 'L' },
-    { id: 'HKG-TPE', name: 'Hong Kong - Taipei (SS)', type: 'SS' },
+    
 ];
 
 // [MODIFIED] Replaced with user's new BEVERAGE_CATEGORIES
