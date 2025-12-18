@@ -1,0 +1,374 @@
+/* 設定字體 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+/* 1. 引入星宇專屬字體 (Bold) */
+@font-face {
+    font-family: 'STARLUX Airlines';
+    /* 如果您的檔名有空白，記得加引號，或建議改名為 STARLUX_Bold.otf 比較保險 */
+    src: url('STARLUX_Bold.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* 2. 套用到標題類元素 */
+/* 這裡我幫您挑選了最適合變成星宇字體的幾個地方 */
+
+/* --- 針對特定功能按鈕套用 STARLUX Bold 字體 --- */
+
+/* 1. 起始畫面的 START 按鈕 */
+#start-btn {
+    font-family: 'STARLUX Airlines', sans-serif !important;
+    font-weight: 700 !important;  /* 強制粗體 */
+    letter-spacing: 2px !important; /* 加寬間距，更有其實 */
+    font-size: 1.5rem !important; /* 稍微加大一點 */
+}
+
+#mode-toggle-btn,      /* 切換模式 */
+#phase-toggle-btn,     /* 切換餐期 */
+#end-flight-btn,       /* 結束航班 */
+#save-inventory-btn,   /* 設定頁面儲存 */
+#submit-order-btn,     /* 送出訂單 */
+#close-service-btn,    /* 結束服務 */
+
+/* [新增] 補上這些按鈕 ID，讓它們也吃到星宇字體 */
+#edit-inventory-btn,   /* 編輯庫存 */
+#view-r-btn,         /* R-Side (G, K) */
+#view-l-btn,
+#open-swap-modal-btn,  /* 換位 */
+#galley-view-btn,      /* Galley View */
+#offline-sync-btn,      /* Sync Data */
+#save-flight-btn      /* 儲存航班 */         /* L-Side (A, C, D, E, F) */
+
+#view-all-btn,           /* R-Side (G, K) */
+#flight-info,
+#save-flight-btn    /* 顯示航班資訊 */  
+
+
+{
+    font-family: 'STARLUX Airlines', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase; /* (選用) 強制全大寫，看起來更像軍事/航空儀表 */
+}
+
+h1, h2, h3, h4, h5, h6,
+.flight-title,          /* 頂部航班標題 */
+.seat-card .text-3xl,   /* 座位號碼 (JS 原生 class) */
+.seat-card .text-2xl,   /* 座位號碼 (CSS 覆寫 class) */
+.bev-group-title,       /* 飲料選單大分類 (Wine & Cocktails...) */
+.inventory-modal-title, /* 設定視窗標題 */
+.modal-title            /* 其他視窗標題 */
+{
+    /* 強制優先使用星宇字體，如果不支援則退回 Inter */
+    font-family: 'STARLUX Airlines', 'Inter', sans-serif !important;
+    letter-spacing: 1.5px; /* 星宇字體通常稍微寬一點點更有質感 */
+}
+
+/* 3. (選用) 讓座位號碼更霸氣一點 */
+.seat-card .text-3xl,
+.seat-card .text-2xl {
+    font-weight: normal !important; /* 因為字體本身就是 Bold，這邊設 normal 避免瀏覽器模擬加粗導致糊掉 */
+}
+
+body {
+    font-family: 'Inter', 'Microsoft JhengHei', 'sans-serif';
+    background-color: #0d1a26;
+}
+
+/* --- 卡片基礎設定 --- */
+.seat-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    padding: 1.5rem !important;
+    gap: 0.8rem !important;
+}
+
+.seat-card:hover:not(.seat-card-disabled, .service-mode-active) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+}
+
+.disabled-option, :disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f3f4f6;
+}
+
+.strikethrough {
+    text-decoration: none !important; /* 移除刪除線，改用淡色 */
+    font-size: 0.85rem !important;
+    color: #64748b !important;
+    opacity: 0.5;
+    margin-top: -0.25rem;
+}
+
+/* --- 按鈕與標籤樣式 --- */
+.service-item-btn {
+    /* 1. 外觀：改用白色半透明 (Glass Effect) */
+    background: rgba(255, 255, 255, 0.15) !important; /* 15% 白，看起來像毛玻璃 */
+    border: 1px solid rgba(255, 255, 255, 0.4) !important; /* 邊框亮一點 */
+    border-radius: 12px !important;
+    backdrop-filter: blur(4px); /* (選用) 讓背景有點模糊，增加質感 */
+    
+    /* 2. 字體優化 (保持清晰度) */
+    font-size: 1.15rem !important;      
+    font-weight: 700 !important;        /* 加粗 */
+    color: #ffffff !important;          /* 純白字 */
+    letter-spacing: 0.5px !important;   
+    
+    /* 3. 文字陰影 (重要：因為背景變亮了，陰影要留著字才不會被吃掉) */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important; 
+
+    /* 4. 排版 */
+    padding: 0.75rem 1rem !important;
+    line-height: 1.4 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 50px;
+}
+
+.service-item-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important; /* hover 時更亮一點 */
+    border-color: #fbbf24 !important; /* 金黃色邊框 */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* 增加一點浮起陰影 */
+    transition: all 0.2s ease;
+}
+
+.beverage-checkbox-label {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+.beverage-checkbox-label:hover {
+    background-color: #f9fafb;
+}
+.beverage-checkbox-label input:checked ~ span {
+    font-weight: 600;
+    color: #d97706;
+}
+
+.tag-btn.selected, .aisle-view-btn.active {
+    background-color: #ca8a04;
+    color: white;
+    border-color: #ca8a04;
+}
+
+.order-tab-btn.active {
+    border-bottom-color: #ca8a04;
+    color: #ca8a04;
+    font-weight: 600;
+}
+.order-tab-btn:not(.active) {
+    border-bottom-color: transparent;
+    color: #6b7280;
+}
+
+/* ==========================================================================
+   【全覽模式 (預設)】樣式設定 (全部縮小 2px)
+   ========================================================================== */
+
+/* 1. 座號：34px 亮橘色 */
+.seat-card .text-2xl {
+    font-size: 34px !important;    /* 36px -> 34px */
+    line-height: 1.2 !important;
+    font-weight: 800 !important;
+    color: #fbbf24 !important;     /* Amber-400 */
+    margin-bottom: 5px !important;
+}
+
+/* 2. 乘客姓名：22px + 粗體 */
+.seat-card .text-base,
+.seat-card .text-lg {
+    font-size: 22px !important;    /* 24px -> 22px */
+    font-weight: 700 !important;   /* 粗體 */
+    color: #ffffff !important;
+    margin-bottom: 5px !important;
+    line-height: 1.4 !important;
+}
+
+/* 3. 餐點內容 (M1, DR1, 備註)：18px + 不要粗體 */
+.seat-card .text-sm,
+.seat-card .text-xs {
+    font-size: 18px !important;    /* 20px -> 18px */
+    font-weight: 400 !important;   /* 正常 (不要粗體) */
+    line-height: 1.5 !important;
+    color: #e5e7eb !important;     /* 淺灰色 */
+    display: block !important;
+}
+
+/* Icon 大小微調 */
+.seat-card svg[data-lucide] {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+
+/* ==========================================================================
+   【走道模式 (Aisle View)】樣式設定 (全部縮小 2px)
+   ========================================================================== */
+
+.aisle-view-active #seat-layout {
+    max-width: 1200px;
+    width: 95%; 
+    
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 走道模式：座號 */
+.aisle-view-active .seat-card .text-2xl { 
+    font-size: 40px !important;    /* 42px -> 40px */
+    margin-bottom: 10px !important;
+}
+
+/* 走道模式：姓名 */
+.aisle-view-active .seat-card .text-base,
+.aisle-view-active .seat-card .text-lg { 
+    font-size: 26px !important;    /* 28px -> 26px */
+    line-height: 1.5 !important;
+}
+
+/* 走道模式：餐點內容 */
+.aisle-view-active .seat-card .text-sm, 
+.aisle-view-active .seat-card .text-xs { 
+    font-size: 22px !important;    /* 24px -> 22px */
+    line-height: 1.8 !important;
+    font-weight: 500 !important;
+}
+
+/* 走道模式：Icon */
+.aisle-view-active .seat-card [data-lucide] { 
+    width: 26px !important;
+    height: 26px !important;
+}
+
+/* 類別摺疊容器 */
+.bev-category-group {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+
+/* 類別標題按鈕 */
+.bev-category-trigger {
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8fafc;
+    font-weight: 700;
+    color: #334155;
+    transition: background-color 0.2s;
+}
+
+.bev-category-trigger:hover {
+    background-color: #f1f5f9;
+}
+
+.bev-category-trigger.active {
+    background-color: #fffbeb;
+    color: #b45309; /* Amber-700 */
+    border-bottom: 1px solid #fde68a;
+}
+
+/* 內容面板 */
+.bev-content-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background-color: #ffffff;
+}
+
+.bev-content-panel.open {
+    max-height: 1000px; /* 足夠大的高度 */
+    padding: 1rem;
+}
+
+
+
+/* 飲料大分類容器 */
+.bev-main-container {
+    display: grid;
+    grid-template-columns: 1fr; /* 手機版單欄 */
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .bev-main-container {
+        grid-template-columns: 1fr 1fr; /* 平板以上雙欄並列 */
+    }
+}
+
+/* 酒精與非酒精的標題 */
+.bev-group-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* --- 模態視窗與佈局重整 --- */
+#order-modal .max-w-2xl {
+    max-width: 900px !important; /* 加寬至 900px 讓雙欄有空間 */
+}
+
+.bev-main-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem; /* 增加兩欄間距，解決擁擠感 */
+    margin-top: 1.5rem;
+}
+
+/* --- 字體樣式統一化 (移除粗體雜訊) --- */
+.bev-group-title {
+    font-size: 1.1rem;
+    font-weight: 600; /* 半粗體標題 */
+    color: #334155;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #f1f5f9;
+    margin-bottom: 1rem;
+}
+
+.category-label-text {
+    font-size: 0.95rem;
+    font-weight: 500; /* 中等粗度，維持清爽 */
+    color: #475569;
+}
+
+.beverage-name-text {
+    font-size: 1.05rem;
+    font-weight: 400; /* 改為一般粗細，解決選單內的擁擠感 */
+    color: #1e293b;
+    margin-left: 0.75rem;
+}
+
+/* --- 設定頁面 (Setup) 座位卡片字體還原 --- */
+#preselect-grid .text-sm { font-size: 0.875rem !important; }
+#preselect-grid input, 
+#preselect-grid select { 
+    font-size: 0.75rem !important; 
+    padding: 0.25rem !important;
+}
+
+/* 針對取消 (Cancelled) 的樣式 */
+.service-item-btn.line-through {
+    background: rgba(220, 38, 38, 0.2) !important; /* 淡淡的紅底 */
+    border-color: rgba(252, 165, 165, 0.6) !important;
+    color: #fecaca !important; 
+    opacity: 0.9 !important;
+    text-decoration: none !important;   
+}

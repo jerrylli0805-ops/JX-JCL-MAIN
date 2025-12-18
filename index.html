@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARLUX Business Class System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<script>
+  // 註冊 Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then((reg) => console.log('✅ Service Worker Registered!', reg))
+        .catch((err) => console.log('❌ SW Registration Failed:', err));
+    });
+  }
+</script>
+
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex flex-col items-center bg-[#0d1a26]">
+ <div id="start-screen" class="fixed inset-0 z-[1000] bg-gray-900 transition-opacity duration-700 ease-out">
+    
+    <div class="absolute inset-0 z-0">
+        <img src="bg.jpg" alt="STARLUX Background" class="w-full h-full object-cover opacity-90">
+        <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80"></div>
+    </div>
+
+    <div class="absolute bottom-8 right-8 z-10 flex flex-col items-center p-8 rounded-3xl bg-[#0d1a26]/60 backdrop-blur-md border border-[#A08C5B]/30 shadow-[0_0_40px_rgba(0,0,0,0.6)] max-w-sm w-full mx-4 sm:mx-0">
+        
+        <div class="mb-8 animate-fade-in-down text-center">
+            <img src="STARLUX_Logo_1.png" alt="STARLUX Logo" class="w-72 mx-auto drop-shadow-xl">
+        </div>
+
+         <h1 class="mb-10 border-b border-[#85724E]/40 pb-3 text-center text-white text-lg drop-shadow-sm">
+                BUSINESS CLASS SERVICE
+        </h1>
+
+        <div id="system-status-container" class="flex flex-col items-center gap-4 w-full">
+            
+            <div id="loading-spinner" class="flex items-center gap-2 text-[#A08C5B] text-xs font-mono tracking-widest animate-pulse">
+                <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                <span>INITIALIZING...</span>
+            </div>
+
+            <button id="start-btn" class="hidden group relative w-full py-4 rounded-xl shadow-[0_5px_20px_rgba(140,88,69,0.3)] transition-all duration-300 transform hover:scale-[1.02] active:scale-95 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-[#8C5845] to-[#85724E] hover:from-[#9C6D56] hover:to-[#A08C5B] transition-colors duration-300"></div>
+                
+                <span class="relative z-10 flex items-center justify-center gap-3 text-white font-bold text-lg tracking-[0.15em]">
+                    INITIATE <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </span>
+            </button>
+            
+            <p id="ready-msg" class="hidden text-[10px] text-[#A08C5B] font-mono mt-1 flex items-center gap-1 opacity-80">
+                <i data-lucide="check-circle" class="w-3 h-3"></i> SYSTEM READY
+            </p>
+        </div>
+    </div>
+    
+    <div class="absolute bottom-6 left-6 text-[#85724E]/50 text-xs font-mono">
+        v23 | STARLUX In-flight Service
+    </div>
+</div>
+    
+    <div id="message-display" class="fixed top-4 z-50 p-3 bg-red-600 text-white rounded-lg shadow-xl hidden transition-opacity duration-300"></div>
+
+    <div id="app" class="w-full max-w-7xl">
+        <header class="text-center mb-8">
+            <div class="mb-8 animate-fade-in-down text-center">
+            <img src="STARLUX_Logo_1.png" alt="STARLUX Logo" class="w-72 mx-auto drop-shadow-xl">
+        </div>
+            <h1 class="mb-10 pb-3 text-center text-white text-2xl drop-shadow-sm">
+                BUSINESS CLASS SERVICE
+            </h1>
+        </header>
+
+        <div id="control-panel" class="mb-6 flex flex-col sm:flex-row justify-between items-center p-3 bg-[#16202e] border border-gray-700 rounded-xl shadow-lg hidden gap-4 flex-wrap">
+        <span id="flight-info" class="text-sm font-semibold text-gray-400">
+            Flight: <span class="text-[#A08C5B]" id="display-flight-no">N/A</span> |
+            Mode: <span class="font-bold text-green-500" id="display-mode">ORDER MODE</span>
+
+        </span>
+
+            <div id="aisle-view-controls" class="hidden items-center gap-2 bg-gray-800 p-1 rounded-lg">
+    <input type="hidden" id="side-filter" value="ALL"> 
+    
+    <button id="view-l-btn" class="aisle-view-btn px-3 py-1.5 text-gray-300 text-sm font-semibold rounded-md hover:bg-gray-700 transition">L-Side (A, D)</button>
+    <button id="view-all-btn" class="aisle-view-btn active px-3 py-1.5 text-white text-sm font-semibold rounded-md hover:bg-gray-700 transition">All</button>
+    <button id="view-r-btn" class="aisle-view-btn px-3 py-1.5 text-gray-300 text-sm font-semibold rounded-md hover:bg-gray-700 transition">R-Side (G, K)</button>
+</div>
+            <div class="flex items-center gap-2">
+                <button id="edit-inventory-btn" class="px-4 py-2 bg-gray-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition hidden">Edit Inventory</button>
+                <button id="offline-sync-btn" class="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 transition flex items-center gap-2">
+                <i data-lucide="qr-code" class="w-4 h-4"></i> Sync Data
+                </button>
+                <button id="save-flight-btn" class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-600 transition">Save</button>
+                <button id="open-swap-modal-btn" class="px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-600 transition">Swap Seats</button>
+                <button id="galley-view-btn" class="px-4 py-2 bg-pink-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition flex items-center gap-2">
+                <i data-lucide="chef-hat" class="w-4 h-4"></i> Galley View
+                </button>
+                <button id="phase-toggle-btn" class="px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition hidden">
+                    Switch to MEAL 2 SERVICE
+                </button>
+                <button id="mode-toggle-btn" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition">
+                    Switch to SERVICE MODE
+                </button>
+                <button id="end-flight-btn" class="px-4 py-2 bg-red-800 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition hidden">
+                    End of Flight
+                </button>
+                
+            </div>
+        </div>
+
+        <div id="seat-layout-container" class="w-full p-6 bg-gray-800 rounded-xl shadow-2xl border border-gray-700/50 hidden">
+            <div class="text-center text-gray-500 text-sm mb-4">
+                <i data-lucide="arrow-up" class="inline-block w-4 h-4 mr-1"></i> Front of Aircraft
+            </div>
+            <div id="seat-layout" class="grid gap-4 w-full">
+                </div>
+        </div>
+
+        <div id="summary-section" class="mt-10 bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700/50 hidden">
+            <h2 class="text-2xl font-bold text-amber-300 mb-4 flex items-center">
+                <i data-lucide="calculator" class="w-6 h-6 mr-2"></i> ORDER SUMMARY
+            </h2>
+            <div id="summary-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-gray-400 italic md:col-span-2" id="empty-summary-message">
+                    No items have been ordered yet.
+                </p>
+                </div>
+        </div>
+    </div>
+
+<div id="inventory-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-7xl shadow-2xl flex flex-col h-[90vh] max-h-[900px] overflow-hidden">
+        
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50 shrink-0">
+            <div>
+                <h3 id="inventory-modal-title" class="text-2xl font-bold text-[#424649] tracking-wide flex items-center gap-3">
+                    <i data-lucide="plane" class="w-6 h-6 text-[#8C5845]"></i> Flight Setup & Inventory
+                </h3>
+                <p class="text-sm text-gray-500 mt-1">Configure flight details, general loading, and pre-selected meals.</p>
+            </div>
+            
+            <label for="load-flight-input" class="cursor-pointer px-4 py-2 bg-white border border-[#85724E]/30 hover:bg-[#85724E]/10 text-[#85724E] font-bold rounded-lg transition text-sm flex items-center gap-2 shadow-sm">
+                <i data-lucide="upload" class="w-4 h-4"></i> Load JSON
+            </label>
+            <input type="file" id="load-flight-input" class="hidden" accept=".json">
+        </div>
+
+        <div class="flex-1 overflow-hidden min-h-0">
+            <div class="grid grid-cols-1 lg:grid-cols-12 h-full">
+                
+                <div class="lg:col-span-4 p-6 overflow-y-auto border-r border-gray-100 bg-white h-full custom-scrollbar">
+                    <h4 class="text-xs font-bold text-[#8C5845] uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">Basic Configuration</h4>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase">FLIGHT NO.</label>
+                            <input type="text" id="flight-number-input" class="w-full p-3 bg-slate-50 border border-gray-200 text-[#424649] rounded-lg focus:ring-2 focus:ring-[#8C5845]/20 focus:border-[#8C5845] uppercase font-bold text-lg placeholder-gray-300 transition-all" placeholder="JX800">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase">AIRCRAFT</label>
+                                <select id="aircraft-select" class="w-full p-3 bg-slate-50 border border-gray-200 text-[#424649] rounded-lg font-semibold focus:ring-[#8C5845]/50 focus:border-[#8C5845]"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase">ROUTE</label>
+                                <select id="route-select" class="w-full p-3 bg-slate-50 border border-gray-200 text-[#424649] rounded-lg font-semibold focus:ring-[#8C5845]/50 focus:border-[#8C5845]"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-xs font-bold text-[#8C5845] uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">General Inventory Load</h4>
+                        <div id="inventory-inputs-container" class="space-y-3"></div>
+                        <div id="inventory-inputs-container-2" class="space-y-3 mt-4 hidden"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8 p-6 overflow-y-auto bg-[#fafafa] h-full custom-scrollbar">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-sm font-bold text-[#424649] uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="globe" class="w-4 h-4 text-[#8C5845]"></i> IEMLs & SPML INPUT
+                        </h4>
+                        <span class="text-[10px] bg-[#8C5845]/10 text-[#8C5845] px-2 py-1 rounded border border-[#8C5845]/20 font-bold">Auto-fills Seat Orders</span>
+                    </div>
+                    
+                    <p class="text-xs text-gray-400 mb-6 border-l-2 border-[#8C5845]/30 pl-3">
+                        Select meals for passengers who pre-ordered online. These do <b>NOT</b> deduct from the General Inventory on the left.
+                    </p>
+
+                    <div id="preselect-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+                    
+                    <button id="toggle-preselect-btn" class="hidden"></button>
+                    <div id="preselect-input-area" class="hidden"></div> 
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-gray-100 bg-white rounded-b-2xl flex justify-end gap-3 z-10 shrink-0">
+            <button id="save-inventory-btn" class="group relative w-full sm:w-auto px-8 py-3 rounded-xl shadow-lg transition transform active:scale-95 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-[#8C5845] to-[#85724E] hover:from-[#9C6D56] hover:to-[#A08C5B] transition-colors duration-300"></div>
+                <span class="relative z-10 flex items-center justify-center gap-2 text-white font-bold tracking-wide">
+                    <span>Confirm Setup & Start</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+</div>
+    <div id="order-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl transform transition-all max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h3 class="text-2xl font-bold text-gray-800">
+                    Order for Seat <span id="modal-seat-id" class="text-amber-600"></span>
+                </h3>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800 transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="passenger-info-section" class="mb-6 grid grid-cols-3 gap-4">
+                 <div>
+                    <label for="title-select" class="block text-sm font-medium text-gray-700 mb-1">Title (稱謂)</label>
+                    <select id="title-select" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition shadow-sm"></select>
+                </div>
+                <div class="col-span-2">
+                    <label for="last-name-input" class="block text-sm font-medium text-gray-700 mb-1">Last Name (姓氏)</label>
+                    <input type="text" id="last-name-input" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition shadow-sm uppercase" placeholder="e.g., LEE">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quick Tags (快速標籤)</label>
+                <div id="remark-tags-container" class="flex flex-wrap gap-2">
+                    </div>
+            </div>
+             <div class="mb-6">
+                <label for="remark-input" class="block text-sm font-medium text-gray-700 mb-1">Remark (文字備註)</label>
+                <input type="text" id="remark-input" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition shadow-sm" placeholder="Enter other remarks...">
+            </div>
+            <div id="service-status-section" class="mb-6 border p-4 rounded-lg bg-gray-50">
+                <label class="block text-lg font-semibold text-gray-700 mb-3">Service Status (服務狀態)</label>
+                <div class="grid grid-cols-3 gap-3">
+                    <label class="p-2 border rounded-lg flex items-center cursor-pointer bg-white hover:bg-amber-100">
+                        <input type="radio" name="service-status" value="ORDERED" checked class="form-radio h-4 w-4 text-amber-500">
+                        <span class="ml-2 text-sm font-medium">Order Meal</span>
+                    </label>
+                    <label class="p-2 border rounded-lg flex items-center cursor-pointer bg-white hover:bg-red-100">
+                        <input type="radio" name="service-status" value="DND" class="form-radio h-4 w-4 text-red-500">
+                        <span class="ml-2 text-sm font-medium">DND</span>
+                    </label>
+                    <label class="p-2 border rounded-lg flex items-center cursor-pointer bg-white hover:bg-blue-100">
+                        <input type="radio" name="service-status" value="DELAYED" class="form-radio h-4 w-4 text-blue-500">
+                        <span class="ml-2 text-sm font-medium">Delay Meal</span>
+                    </label>
+                </div>
+                <div id="delay-time-input-container" class="mt-4 hidden">
+                    <label for="delay-time-select" class="block text-sm font-medium text-gray-700 mb-1">Delay Until (延後至)</label>
+                    <select id="delay-time-select" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition shadow-sm">
+                        <option value="15">15 min</option>
+                        <option value="30">30 min</option>
+                        <option value="45">45 min</option>
+                        <option value="60">60 min</option>
+                        <option value="90">90 min</option>
+                        <option value="120">120 min (2 hours)</option>
+                        <option value="0">Upon Request (旅客要求時)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="meal-beverage-selection">
+                
+                <div id="order-phase-tabs" class="flex mb-4 border-b hidden">
+                    <button id="order-tab-1" class="order-tab-btn flex-1 py-2 font-semibold active">1st Meal & Beverages</button>
+                    <button id="order-tab-2" class="order-tab-btn flex-1 py-2 font-semibold">2nd Meal & Beverages</button>
+                </div>
+
+                <div id="order-tab-content-1">
+                    <div id="spml-section" class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="spml-checkbox" class="form-checkbox h-5 w-5 text-amber-600 rounded">
+                            <span class="ml-2 text-gray-700 font-medium">Requested Special Meal (SPML) - 1st Meal</span>
+                        </label>
+                        <div id="spml-input-container" class="mt-2 space-y-2 hidden">
+                            <select id="spml-select" class="w-full p-2 border border-gray-300 rounded-lg">
+                                </select>
+                            <input type="text" id="spml-input-other" class="w-full p-2 border border-gray-300 rounded-lg uppercase hidden" placeholder="Enter SPML Code (e.g., DBML)">
+                        </div>
+                    </div>
+                    <div id="meal-options-wrapper" class="mb-6">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">Main Course (主餐)</label>
+                        <div id="meal-options-container" class="space-y-3">
+                            </div>
+                    </div>
+                    <div id="dessert-display" class="mb-4 p-3 bg-amber-100 rounded-lg text-center hidden">
+                        <p class="font-semibold text-amber-800">Dessert: <span id="dessert-type" class="font-bold"></span></p>
+                    </div>
+                    <div id="beverage-options-wrapper" class="mb-8">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">Beverage(s) (飲品)</label>
+                        <div id="beverage-options-container" class="space-y-4">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="order-tab-content-2" class="hidden">
+                    <div id="spml-section-2" class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="spml-checkbox-2" class="form-checkbox h-5 w-5 text-amber-600 rounded">
+                            <span class="ml-2 text-gray-700 font-medium">Requested Special Meal (SPML) - 2nd Meal</span>
+                        </label>
+                         <div id="spml-input-container-2" class="mt-2 space-y-2 hidden">
+                            <select id="spml-select-2" class="w-full p-2 border border-gray-300 rounded-lg">
+                                </select>
+                            <input type="text" id="spml-input-other-2" class="w-full p-2 border border-gray-300 rounded-lg uppercase hidden" placeholder="Enter SPML Code (e.g., DBML)">
+                        </div>
+                    </div>
+                    <div id="meal-options-wrapper-2" class="mb-6">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">2nd Main Course (第二主餐)</label>
+                        <div id="meal-options-container-2" class="space-y-3">
+                            </div>
+                    </div>
+                    <div id="beverage-options-wrapper-2" class="mb-8">
+                        <label class="block text-lg font-semibold text-gray-700 mb-2">2nd Beverage(s) (第二餐飲品)</label>
+                        <div id="beverage-options-container-2" class="space-y-4">
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div id="service-mode-actions" class="hidden grid-cols-1 gap-3 mb-3">
+    <button id="btn-add-beverage" class="w-full py-3 bg-amber-100 text-amber-800 font-bold rounded-xl hover:bg-amber-200 transition border border-amber-300 flex items-center justify-center gap-2">
+        <i data-lucide="coffee" class="w-5 h-5"></i>
+        Add Beverage (加點飲品)
+    </button>
+</div>
+
+            <button id="submit-order-btn" class="w-full py-3 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition duration-200 shadow-md">
+                Confirm Order
+            </button>
+            <div id="close-service-container" class="mt-4 hidden">
+                <button id="close-service-btn" class="w-full py-2 bg-gray-600 text-white font-semibold rounded-xl hover:bg-gray-700 transition">Close Service</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="service-action-modal" class="absolute bg-white rounded-lg shadow-xl p-2 z-50 border border-gray-200 hidden">
+        <button data-action="Served" class="w-full text-left px-3 py-1.5 text-sm text-green-700 hover:bg-green-100 rounded">Served (已服務)</button>
+        <button data-action="Skip" class="w-full text-left px-3 py-1.5 text-sm text-yellow-700 hover:bg-yellow-100 rounded">Skip (跳過)</button>
+        <button data-action="Cancel" class="w-full text-left px-3 py-1.5 text-sm text-red-700 hover:bg-red-100 rounded">Cancel Item (取消此項)</button>
+    </div>
+    
+    <div id="delay-action-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                Service for Seat <span id="delay-modal-seat-id" class="text-amber-600"></span>
+            </h3>
+            <div class="space-y-3">
+                <button data-action="start_now" class="delay-action-btn w-full py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition">Start Meal Service Now</button>
+                <p class="text-center text-sm text-gray-500"> or Adjust Delay:</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button data-action="delay" data-value="15" class="delay-action-btn w-full py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition">Delay 15 min</button>
+                    <button data-action="delay" data-value="30" class="delay-action-btn w-full py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition">Delay 30 min</button>
+                </div>
+                 <button data-action="cancel_delay" class="delay-action-btn w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded mt-4">Close Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dnd-action-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                DND Action for Seat <span id="dnd-modal-seat-id" class="text-amber-600"></span>
+            </h3>
+            <div class="space-y-3">
+                <button data-action="start_service" class="dnd-action-btn w-full py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition">Start Service</button>
+                <button data-action="edit_order" class="dnd-action-btn w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">Edit Order</button>
+                <button data-action="close" class="dnd-action-btn w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded mt-4">Close Menu</button>
+            </div>
+        </div>
+    </div>
+
+     <div id="swap-seats-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Swap Seats</h3>
+            <div class="flex items-center justify-around mb-6">
+                <div>
+                    <label for="swap-seat-1" class="block text-sm font-medium text-gray-700 mb-1">Seat 1</label>
+                    <select id="swap-seat-1" class="p-2 border rounded-lg"></select>
+                </div>
+                 <i data-lucide="arrow-right-left" class="w-6 h-6 text-gray-500 mt-5"></i>
+                <div>
+                    <label for="swap-seat-2" class="block text-sm font-medium text-gray-700 mb-1">Seat 2</label>
+                    <select id="swap-seat-2" class="p-2 border rounded-lg"></select>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button id="cancel-swap-btn" class="w-full py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition">Cancel</button>
+                <button id="confirm-swap-btn" class="w-full py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Confirm Swap</button>
+            </div>
+        </div>
+    </div>
+
+    
+
+<div id="sync-modal" class="fixed inset-0 bg-black/90 z-[200] hidden flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="bg-gray-100 p-4 border-b flex justify-between items-center">
+            <h3 class="font-bold text-gray-800 text-lg">Offline Data Sync (QR)</h3>
+            <button id="close-sync-btn" class="text-gray-500 hover:text-gray-800">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div class="flex border-b">
+            <button id="tab-send" class="flex-1 py-3 font-bold text-amber-600 border-b-2 border-amber-600 bg-amber-50">
+                SEND (產生 QR)
+            </button>
+            <button id="tab-receive" class="flex-1 py-3 font-bold text-gray-500 hover:bg-gray-50">
+                RECEIVE (掃描 QR)
+            </button>
+        </div>
+        <div class="p-6 flex-1 overflow-y-auto flex flex-col items-center justify-center bg-gray-50">
+            <div id="send-section" class="flex flex-col items-center w-full">
+                <p class="text-sm text-gray-500 mb-4 text-center">讓另一台 iPad 掃描此 QR Code 以同步資料。</p>
+                <div id="qrcode-display" class="border-4 border-white shadow-lg bg-white p-2"></div>
+                <div id="qr-error-msg" class="hidden text-red-500 text-sm mt-2 font-bold">Data too large! Please sync fewer seats.</div>
+            </div>
+            <div id="receive-section" class="hidden w-full flex-col items-center">
+                <div id="reader" class="w-full max-w-sm bg-black rounded-lg overflow-hidden border-2 border-teal-500"></div>
+                <p id="scan-status" class="text-sm text-gray-500 mt-2 text-center animate-pulse">Starting Camera...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div id="due-service-alert-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl text-center">
+            <i data-lucide="bell-ring" class="w-16 h-16 text-amber-500 mx-auto mb-4 animate-pulse"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Service Due</h3>
+            <p id="due-service-alert-message" class="text-lg text-gray-600 mb-6"></p>
+            <button id="dismiss-due-service-alert-btn" class="w-full py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">OK</button>
+        </div>
+    </div>
+    <div id="galley-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col transition-all duration-300">
+        <div class="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center shadow-md">
+            <div>
+                <h2 class="text-3xl font-black text-pink-500 tracking-wider flex items-center gap-3">
+                    <i data-lucide="chef-hat" class="w-8 h-8"></i> GALLEY DASHBOARD(BETA)
+                </h2>
+                <p class="text-gray-400 text-sm mt-1 font-mono">Total Pax: <span id="galley-total-pax" class="text-white font-bold">0</span></p>
+            </div>
+            <button id="close-galley-btn" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-bold border border-gray-600 transition flex items-center gap-2">
+                <i data-lucide="x" class="w-5 h-5"></i> CLOSE
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 bg-black custom-scrollbar">
+            <div class="max-w-7xl mx-auto space-y-8">
+                
+                <div id="galley-section-m1">
+                    <h3 class="text-xl font-bold text-amber-400 mb-4 border-b-2 border-amber-400/30 pb-2 uppercase tracking-widest">
+                        🔥 Hot Kitchen (Meal 1)
+                    </h3>
+                    <div id="galley-grid-m1" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        </div>
+                </div>
+
+                <div id="galley-section-m2" class="hidden">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4 border-b-2 border-blue-400/30 pb-2 uppercase tracking-widest">
+                        🌙 Second Service (Meal 2)
+                    </h3>
+                    <div id="galley-grid-m2" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div id="galley-section-app" class="hidden">
+                        <h3 class="text-xl font-bold text-green-400 mb-4 border-b-2 border-green-400/30 pb-2 uppercase tracking-widest">
+                            🥗 Cold Kitchen (Starter)
+                        </h3>
+                        <div id="galley-grid-app" class="grid grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400/30 pb-2 uppercase tracking-widest">
+                            ⚠️ Special Meals
+                        </h3>
+                        <div id="galley-grid-spml" class="grid grid-cols-2 gap-4"></div>
+                    </div>
+                    <div id="galley-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col transition-all duration-300">
+    <div class="flex-1 overflow-y-auto p-6 bg-black custom-scrollbar">
+        <div class="max-w-7xl mx-auto space-y-8">
+            
+            <div id="galley-aggregate-view" class="mt-8 pt-8 border-t border-gray-800">
+                </div>
+
+        </div>
+    </div>
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <footer class="mt-8 text-center text-gray-500 text-sm">
+        <p id="current-time-display" class="mb-4"></p>
+    </footer>
+
+    <script src="app_v22.js"></script>
+</body>
+</html>
